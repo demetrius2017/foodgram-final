@@ -1,8 +1,16 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import (FavoriteRecipe, Ingredient, Recipe, RecipeIngredient,
-                     RecipeTag, ShoppingCart, Subscribe, Tag)
+from .models import (
+    FavoriteRecipe,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    RecipeTag,
+    ShoppingCart,
+    Subscribe,
+    Tag,
+)
 
 
 class RecipeTagAdmin(admin.StackedInline):
@@ -29,7 +37,12 @@ class RecipeAdmin(admin.ModelAdmin):
         "pub_date",
         "get_favorite_count",
     )
-    search_fields = ("name", "cooking_time", "author__email", "ingredients__name")
+    search_fields = (
+        "name",
+        "cooking_time",
+        "author__email",
+        "ingredients__name",
+    )
     list_filter = (
         "pub_date",
         "tags",
@@ -47,7 +60,9 @@ class RecipeAdmin(admin.ModelAdmin):
 
     @admin.display(description="image")
     def get_image(self, obj):
-        return format_html(f'<img src="{obj.image.url}" width=50px; height=50px;>')
+        return format_html(
+            f'<img src="{obj.image.url}" width=50px; height=50px;>'
+        )
 
     @admin.display(description="tags")
     def get_tags(self, obj):
@@ -57,7 +72,8 @@ class RecipeAdmin(admin.ModelAdmin):
     def get_ingredients(self, obj):
         return "\n ".join(
             [
-                f"{i.ingredient.name} - {i.amount}" f"{i.ingredient.measurement_unit}."
+                f"{i.ingredient.name} - {i.amount}"
+                f"{i.ingredient.measurement_unit}."
                 for i in obj.recipe.all()
             ]
         )
