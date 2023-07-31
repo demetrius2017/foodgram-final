@@ -18,7 +18,9 @@ class Recipe(models.Model):
     image = models.ImageField("Изображение рецепта", upload_to="recipes/")
     text = models.TextField("Описание рецепта")
     cooking_time = models.BigIntegerField("Время приготовления в минутах")
-    ingredients = models.ManyToManyField("Ingredient", through="RecipeIngredient")
+    ingredients = models.ManyToManyField(
+        "Ingredient", through="RecipeIngredient"
+    )
     tags = models.ManyToManyField("Tag", through="RecipeTag")
     pub_date = models.DateTimeField(
         "Дата публикации",
@@ -31,7 +33,7 @@ class Recipe(models.Model):
         verbose_name_plural = "Рецепты"
 
     def __str__(self) -> str:
-        return f"{self.author.email}, {self.name}"
+        return f"{self.name}"
 
 
 class RecipeIngredient(models.Model):
@@ -75,7 +77,9 @@ class Tag(models.Model):
 
 class Ingredient(models.Model):
     name = models.CharField("Название ингредиента", max_length=200)
-    measurement_unit = models.CharField("Единица измерения ингредиента", max_length=200)
+    measurement_unit = models.CharField(
+        "Единица измерения ингредиента", max_length=200
+    )
 
     class Meta:
         verbose_name = "Ингредиент"
@@ -121,7 +125,9 @@ class FavoriteRecipe(models.Model):
         verbose_name="Пользователь",
     )
     recipe = models.ManyToManyField(
-        Recipe, related_name="favorite_recipe", verbose_name="Избранный рецепт"
+        Recipe,
+        related_name="favorite_recipe",
+        verbose_name="Избранный рецепт",
     )
 
     class Meta:
@@ -145,7 +151,9 @@ class ShoppingCart(models.Model):
         verbose_name="Пользователь",
     )
     recipe = models.ManyToManyField(
-        Recipe, related_name="shopping_cart", verbose_name="Рецепт в корзине покупок"
+        Recipe,
+        related_name="shopping_cart",
+        verbose_name="Рецепт в корзине покупок",
     )
 
     class Meta:
