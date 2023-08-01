@@ -8,16 +8,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = (
     os.getenv("SECRET_KEY"),
-    "my_mega_secret_code_ilz@4zqj=rq&agdol^##zgl9(vs",
+    "django-insecure-j_89af+30&&4qm*8z9_(^zz8p4-ho8z_m6ylm0s$h!-p@on1_^",
 )
 
 DEBUG = False
 
 ALLOWED_HOSTS = [
-    "62.84.115.143",
     "localhost",
     "127.0.0.1",
-    "themasterid.sytes.net",
     "*",
 ]
 
