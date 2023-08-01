@@ -31,26 +31,18 @@ class TagsFilter(filters.AllValuesMultipleFilter):
     field_class = TagsMultipleChoiceField
 
 
-# ! READY
 class RecipeFilter(filters.FilterSet):
-    is_favorited = filters.BooleanFilter(
-        field_name="is_favorited",
-        label="В избранном",
-    )
+    is_favorited = filters.BooleanFilter(field_name="is_favorited")
     is_in_shopping_cart = filters.BooleanFilter(
-        field_name="is_in_shopping_cart",
-        label="В корзине",
+        field_name="is_in_shopping_cart"
     )
-    tags = TagsFilter(
-        field_name="tags__slug",
-        label="Слаг тэга",
-    )
+    tags = TagsFilter(field_name="tags__slug")
 
     class Meta:
         model = Recipe
         fields = (
             "is_favorited",
-            "author",
             "is_in_shopping_cart",
+            "author",
             "tags",
         )
