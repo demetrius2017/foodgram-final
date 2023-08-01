@@ -1,5 +1,4 @@
 from django.contrib import admin
-from django.utils.html import format_html
 
 from .models import (
     FavoriteRecipe,
@@ -11,6 +10,8 @@ from .models import (
     Subscribe,
     Tag,
 )
+
+EMPTY_MSG = "-пусто-"
 
 
 class RecipeTagAdmin(admin.StackedInline):
@@ -31,7 +32,6 @@ class RecipeAdmin(admin.ModelAdmin):
         "name",
         "text",
         "cooking_time",
-        "get_image",
         "get_tags",
         "get_ingredients",
         "pub_date",
@@ -51,34 +51,28 @@ class RecipeAdmin(admin.ModelAdmin):
         RecipeTagAdmin,
         RecipeIngredientAdmin,
     )
-    empty_value_display = "-пусто-"
-    save_on_top = True
+    empty_value_display = EMPTY_MSG
 
-    @admin.display(description="author email")
+    @admin.display(description="Электронная почта автора")
     def get_author(self, obj):
         return obj.author.email
 
-    @admin.display(description="image")
-    def get_image(self, obj):
-        return format_html(
-            f'<img src="{obj.image.url}" width=50px; height=50px;>'
-        )
-
-    @admin.display(description="tags")
+    @admin.display(description="Тэги")
     def get_tags(self, obj):
-        return ", ".join([i.name for i in obj.tags.all()])
+        list_ = [_.name for _ in obj.tags.all()]
+        return ", ".join(list_)
 
-    @admin.display(description="ingredient")
+    @admin.display(description=" Ингредиенты ")
     def get_ingredients(self, obj):
         return "\n ".join(
             [
-                f"{i.ingredient.name} - {i.amount}"
-                f"{i.ingredient.measurement_unit}."
-                for i in obj.recipe.all()
+                f"{_.ingredient.name} - {_.amount} "
+                f"{_.ingredient.measurement_unit}."
+                for _ in obj.recipe.all()
             ]
         )
 
-    @admin.display(description="favorite count")
+    @admin.display(description="В избранном")
     def get_favorite_count(self, obj):
         return obj.favorite_recipe.count()
 
@@ -90,15 +84,12 @@ class TagAdmin(admin.ModelAdmin):
         "name",
         "color",
         "slug",
-        "colored_box",
     )
-    search_fields = ("name", "slug")
-    empty_value_display = "-пусто-"
-
-    def colored_box(self, obj):
-        return format_html(
-            f'<svg><rect fill="{obj.color}" width="20" height="20"></svg>'
-        )
+    search_fields = (
+        "name",
+        "slug",
+    )
+    empty_value_display = EMPTY_MSG
 
 
 @admin.register(Ingredient)
@@ -108,8 +99,11 @@ class IngredientAdmin(admin.ModelAdmin):
         "name",
         "measurement_unit",
     )
-    search_fields = ("name", "measurement_unit")
-    empty_value_display = "-пусто-"
+    search_fields = (
+        "name",
+        "measurement_unit",
+    )
+    empty_value_display = EMPTY_MSG
 
 
 @admin.register(Subscribe)
@@ -124,19 +118,19 @@ class SubscribeAdmin(admin.ModelAdmin):
         "follower__email",
         "following__email",
     )
-    empty_value_display = "-пусто-"
+    empty_value_display = EMPTY_MSG
 
 
 @admin.register(FavoriteRecipe)
 class FavoriteRecipeAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "get_recipe", "get_count")
-    empty_value_display = "-пусто-"
+    empty_value_display = EMPTY_MSG
 
-    @admin.display(description="recipes")
+    @admin.display(description="Рецепты")
     def get_recipe(self, obj):
-        return [item.name for item in obj.recipe.all()]
+        return [_.name for _ in obj.recipe.all()[:5]]
 
-    @admin.display(description="count")
+    @admin.display(description="В избранных")
     def get_count(self, obj):
         return obj.recipe.count()
 
@@ -144,12 +138,12 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
 @admin.register(ShoppingCart)
 class SoppingCartAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "get_recipe", "get_count")
-    empty_value_display = "-пусто-"
+    empty_value_display = EMPTY_MSG
 
-    @admin.display(description="recipes")
+    @admin.display(description="Рецепты")
     def get_recipe(self, obj):
-        return [item.name for item in obj.recipe.all()]
+        return [_.name for _ in obj.recipe.all()]
 
-    @admin.display(description="count")
+    @admin.display(description="В избранных")
     def get_count(self, obj):
         return obj.recipe.count()

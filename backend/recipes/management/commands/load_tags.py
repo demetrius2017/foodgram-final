@@ -3,7 +3,7 @@ from recipes.models import Tag
 
 
 class Command(BaseCommand):
-    help = "Create default tags"
+    help = "Создаем тэги"
 
     def handle(self, *args, **kwargs):
         data = [
@@ -12,5 +12,4 @@ class Command(BaseCommand):
             {"name": "Ужин", "color": "#8775D2", "slug": "supper"},
         ]
         Tag.objects.bulk_create(Tag(**tag) for tag in data)
-
-        self.stdout.write(self.style.SUCCESS("Successfully create tags"))
+        self.stdout.write(self.style.SUCCESS("Все тэги загружены!"))
