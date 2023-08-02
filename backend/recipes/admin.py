@@ -110,13 +110,13 @@ class IngredientAdmin(admin.ModelAdmin):
 class SubscribeAdmin(admin.ModelAdmin):
     list_display = (
         "id",
-        "follower",
-        "following",
+        "user",
+        "author",
         "created",
     )
     search_fields = (
-        "follower__email",
-        "following__email",
+        "user__email",
+        "author__email",
     )
     empty_value_display = EMPTY_MSG
 
