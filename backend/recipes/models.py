@@ -166,7 +166,7 @@ class ShoppingCart(models.Model):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name="shopping_cart",
+        related_name="user_shopping_cart",
         null=True,
         verbose_name="Пользователь",
     )
@@ -187,3 +187,4 @@ class ShoppingCart(models.Model):
     def create_shopping_cart(sender, instance, created, **kwargs):
         if created:
             return ShoppingCart.objects.create(user=instance)
+
