@@ -2,12 +2,8 @@ import { render, screen } from '@testing-library/react';
 import { BrowserRouter as Router } from 'react-router-dom';
 import App from './App';
 
-test('renders learn react link', () => {
-  render(
-    <Router> {/* Оберните компонент App в Router */}
-      <App />
-    </Router>
-  );
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+test('renders login title', () => {
+  render(<App />);
+  const titleElement = screen.getByText(/Войти на сайт/i);
+  expect(titleElement).toBeInTheDocument();
 });
