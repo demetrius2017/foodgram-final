@@ -8,6 +8,10 @@ from rest_framework import serializers
 
 User = get_user_model()
 ERR_MSG = "Не удается войти в систему с предоставленными учетными данными."
+ERR_MSG_AUTHORIZATION = """
+    Не удается войти в систему с предоставленными учетными данными."""
+ERR_MSG_MISSING_CREDENTIALS = """
+    Необходимо указать "адрес электронной почты" и "пароль"."""
 
 
 class TokenSerializer(serializers.Serializer):
@@ -31,11 +35,12 @@ class TokenSerializer(serializers.Serializer):
             )
             if not user:
                 raise serializers.ValidationError(
-                    ERR_MSG, code="authorization"
+                    ERR_MSG_AUTHORIZATION, code="authorization"
                 )
         else:
-            msg = 'Необходимо указать "адрес электронной почты" и "пароль".'
-            raise serializers.ValidationError(msg, code="authorization")
+            raise serializers.ValidationError(
+                ERR_MSG_MISSING_CREDENTIALS, code="authorization"
+            )
         attrs["user"] = user
         return attrs
 

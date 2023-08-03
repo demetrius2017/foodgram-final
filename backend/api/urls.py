@@ -21,9 +21,16 @@ router.register("ingredients", IngredientsViewSet)
 router.register("recipes", RecipesViewSet)
 
 
-urlpatterns = [
+# Аутентификация
+auth_patterns = [
     path("auth/token/login/", Tokens.as_view(), name="login"),
     path("users/set_password/", set_password, name="set_password"),
+    path("", include("djoser.urls")),
+    path("auth/", include("djoser.urls.authtoken")),
+]
+
+# Работа с рецептами и подписками
+recipe_patterns = [
     path(
         "users/<int:user_id>/subscribe/",
         AddAndDeleteSubscribe.as_view(),
@@ -39,7 +46,10 @@ urlpatterns = [
         AddDeleteShoppingCart.as_view(),
         name="shopping_cart",
     ),
+]
+
+urlpatterns = [
+    *auth_patterns,
+    *recipe_patterns,
     path("", include(router.urls)),
-    path("", include("djoser.urls")),
-    path("auth/", include("djoser.urls.authtoken")),
 ]

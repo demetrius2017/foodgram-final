@@ -49,7 +49,7 @@ FILENAME = "shoppingcart.pdf"
 
 
 class GetObjectMixin:
-    """Миксина для удаления/добавления рецептов избранных/корзины."""
+    """Mixin for adding/removing recipes from favorites/cart."""
 
     serializer_class = SubscribeRecipeSerializer
     permission_classes = (AllowAny,)
@@ -61,11 +61,63 @@ class GetObjectMixin:
         return recipe
 
 
+class AddDeleteMixin:
+    def create(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.get_related_field().add(instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_destroy(self, instance):
+        self.get_related_field().remove(instance)
+
+    def get_related_field(self):
+        # Define this in the inheriting class
+        pass
+
+
 class PermissionAndPaginationMixin:
-    """Миксина для списка тегов и ингридиентов."""
+    """Mixin for the tag and ingredient lists."""
 
     permission_classes = (IsAdminOrReadOnly,)
     pagination_class = None
+
+
+class AddDeleteFavoriteRecipe(
+    GetObjectMixin,
+    generics.RetrieveDestroyAPIView,
+    generics.ListCreateAPIView,
+):
+    serializer_class = RecipeReadSerializer
+    queryset = Recipe.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        instance = self.get_object()
+        request.user.favorite_recipes.add(
+            instance
+        )  # Используем favorite_recipes здесь
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_destroy(self, request, instance):
+        request.user.favorite_recipes.remove(
+            instance
+        )  # Используем favorite_recipes здесь
+
+
+class AddDeleteShoppingCart(
+    GetObjectMixin,
+    generics.RetrieveDestroyAPIView,
+    generics.ListCreateAPIView,
+):
+    def create(self, request, *args, **kwargs):
+        instance = self.get_object()
+        request.user.shopping_cart.recipe.add(instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def perform_destroy(self, request, instance):
+        request.user.shopping_cart.recipe.remove(instance)
 
 
 class AddAndDeleteSubscribe(
@@ -75,9 +127,9 @@ class AddAndDeleteSubscribe(
 
     serializer_class = SubscribeSerializer
 
-    def get_queryset(self):
+    def get_queryset(self, request):
         return (
-            self.request.user.follower.select_related("following")
+            request.user.follower.select_related("following")
             .prefetch_related("following__recipe")
             .annotate(
                 recipes_count=Count("following__recipe"),
@@ -107,42 +159,8 @@ class AddAndDeleteSubscribe(
         serializer = self.get_serializer(subs)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    def perform_destroy(self, instance):
-        self.request.user.follower.filter(author=instance).delete()
-
-
-class AddDeleteFavoriteRecipe(
-    GetObjectMixin,
-    generics.RetrieveDestroyAPIView,
-    generics.ListCreateAPIView,
-):
-    """Добавление и удаление рецепта в/из избранных."""
-
-    def create(self, request, *args, **kwargs):
-        instance = self.get_object()
-        request.user.favorite_recipe.recipe.add(instance)
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def perform_destroy(self, instance):
-        self.request.user.favorite_recipe.recipe.remove(instance)
-
-
-class AddDeleteShoppingCart(
-    GetObjectMixin,
-    generics.RetrieveDestroyAPIView,
-    generics.ListCreateAPIView,
-):
-    """Добавление и удаление рецепта в/из корзины."""
-
-    def create(self, request, *args, **kwargs):
-        instance = self.get_object()
-        request.user.shopping_cart.recipe.add(instance)
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    def perform_destroy(self, instance):
-        self.request.user.shopping_cart.recipe.remove(instance)
+    def perform_destroy(self, request, instance):
+        request.user.follower.filter(author=instance).delete()
 
 
 class UsersViewSet(UserViewSet):
@@ -151,11 +169,11 @@ class UsersViewSet(UserViewSet):
     serializer_class = UserListSerializer
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
+    def get_queryset(self, request):
         return (
             User.objects.annotate(
                 is_subscribed=Exists(
-                    self.request.user.follower.filter(author=OuterRef("id"))
+                    request.user.follower.filter(author=OuterRef("id"))
                 )
             ).prefetch_related("follower", "following")
             if self.request.user.is_authenticated
