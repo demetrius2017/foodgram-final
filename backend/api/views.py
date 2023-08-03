@@ -1,8 +1,10 @@
 import io
+from abc import ABC, abstractmethod
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAdminOrReadOnly
 from django.contrib.auth import get_user_model
+from django.db.models import Manager
 from django.db.models.aggregates import Count, Sum
 from django.db.models.expressions import Exists, OuterRef, Value
 from django.http import FileResponse
@@ -54,26 +56,38 @@ class GetObjectMixin:
     serializer_class = SubscribeRecipeSerializer
     permission_classes = (AllowAny,)
 
-    def get_object(self):
+    def get_object(self, request):
         recipe_id = self.kwargs["recipe_id"]
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        self.check_object_permissions(self.request, recipe)
+        self.check_object_permissions(request, recipe)
         return recipe
 
 
-class AddDeleteMixin:
+class AddDeleteMixin(ABC):
+    @abstractmethod
+    def get_object(self):
+        pass
+
+    @abstractmethod
+    def get_serializer(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def get_related_field(self) -> Manager:
+        pass
+
     def create(self, request, *args, **kwargs):
+        related_field = self.get_related_field()
         instance = self.get_object()
-        self.get_related_field().add(instance)
+        if related_field is not None and hasattr(related_field, "add"):
+            related_field.add(instance)
+        else:
+            related_field.set(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def perform_destroy(self, instance):
         self.get_related_field().remove(instance)
-
-    def get_related_field(self):
-        # Define this in the inheriting class
-        pass
 
 
 class PermissionAndPaginationMixin:
