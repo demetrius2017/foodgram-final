@@ -1,7 +1,5 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from recipes.models import Recipe, ShoppingCart
-
 
 class User(AbstractUser):
     email = models.EmailField(
@@ -12,10 +10,10 @@ class User(AbstractUser):
     first_name = models.CharField("Имя", max_length=150)
     last_name = models.CharField("Фамилия", max_length=150)
     shopping_cart = models.OneToOneField(
-        ShoppingCart, on_delete=models.SET_NULL, null=True
+        'recipes.ShoppingCart', on_delete=models.SET_NULL, null=True
     )
     favorite_recipes = models.ManyToManyField(
-        Recipe, related_name="favorited_by_users"
+        'recipes.Recipe', related_name="favorited_by_users"
     )
 
     USERNAME_FIELD = "email"
