@@ -1,9 +1,13 @@
 import { render, screen } from '@testing-library/react';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import App from './App';
 
 test('renders login title', () => {
-  render(<App />);
+  render(
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
   const titleElement = screen.getByText(/Войти на сайт/i);
   expect(titleElement).toBeInTheDocument();
 });
