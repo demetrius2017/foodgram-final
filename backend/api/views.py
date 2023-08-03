@@ -334,8 +334,25 @@ class Tokens(ObtainAuthToken):
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = serializer.validated_data["user"]
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        validated_data = serializer.validated_data
+        if not validated_data or not isinstance(validated_data, dict):
+            return Response(
+                {"error": "Не удалось найти пользователя!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user = validated_data.get("user")
+        if not user:
+            return Response(
+                {"error": "Не удалось найти пользователя!"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         token, created = Token.objects.get_or_create(user=user)
         return Response(
             {"auth_token": token.key}, status=status.HTTP_201_CREATED
