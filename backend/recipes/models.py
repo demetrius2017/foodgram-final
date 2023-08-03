@@ -187,4 +187,3 @@ class ShoppingCart(models.Model):
     def create_shopping_cart(sender, instance, created, **kwargs):
         if created:
             return ShoppingCart.objects.create(user=instance)
-
