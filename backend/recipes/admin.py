@@ -5,18 +5,12 @@ from .models import (
     Ingredient,
     Recipe,
     RecipeIngredient,
-    RecipeTag,
     ShoppingCart,
     Subscribe,
     Tag,
 )
 
 EMPTY_MSG = "-пусто-"
-
-
-class RecipeTagAdmin(admin.StackedInline):
-    model = RecipeTag
-    autocomplete_fields = ("tag",)
 
 
 class RecipeIngredientAdmin(admin.StackedInline):
@@ -47,10 +41,7 @@ class RecipeAdmin(admin.ModelAdmin):
         "pub_date",
         "tags",
     )
-    inlines = (
-        RecipeTagAdmin,
-        RecipeIngredientAdmin,
-    )
+    inlines = (RecipeIngredientAdmin,)
     empty_value_display = EMPTY_MSG
 
     @admin.display(description="Электронная почта автора")
@@ -66,9 +57,13 @@ class RecipeAdmin(admin.ModelAdmin):
     def get_ingredients(self, obj):
         return "\n ".join(
             [
-                f"{_.ingredient.name} - {_.amount} "
-                f"{_.ingredient.measurement_unit}."
-                for _ in obj.recipe.all()
+                f'{item["ingredient__name"]} - {item["amount"]}'
+                f' {item["ingredient__measurement_unit"]}.'
+                for item in obj.recipe.values(
+                    "ingredient__name",
+                    "amount",
+                    "ingredient__measurement_unit",
+                )
             ]
         )
 
@@ -128,7 +123,7 @@ class FavoriteRecipeAdmin(admin.ModelAdmin):
 
     @admin.display(description="Рецепты")
     def get_recipe(self, obj):
-        return [_.name for _ in obj.recipe.all()[:5]]
+        return [f'{item["name"]} ' for item in obj.recipe.values("name")[:5]]
 
     @admin.display(description="В избранных")
     def get_count(self, obj):
@@ -142,7 +137,7 @@ class SoppingCartAdmin(admin.ModelAdmin):
 
     @admin.display(description="Рецепты")
     def get_recipe(self, obj):
-        return [_.name for _ in obj.recipe.all()]
+        return [f'{item["name"]} ' for item in obj.recipe.values("name")[:5]]
 
     @admin.display(description="В избранных")
     def get_count(self, obj):

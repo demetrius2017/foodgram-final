@@ -19,7 +19,7 @@ class Ingredient(models.Model):
         verbose_name_plural = "Ингредиенты"
 
     def __str__(self):
-        return f"Ингридиент {self.name} ({self.measurement_unit}) создан."
+        return f"{self.name}, {self.measurement_unit}."
 
 
 class Tag(models.Model):
@@ -33,7 +33,7 @@ class Tag(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        return f"Тэг {self.name} добавлен"
+        return self.name
 
 
 class Recipe(models.Model):
@@ -55,7 +55,9 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient, through="RecipeIngredient"
     )
-    tags = models.ManyToManyField(Tag, through="RecipeTag")
+    tags = models.ManyToManyField(
+        Tag, verbose_name="Тэги", related_name="recipes"
+    )
     cooking_time = models.PositiveSmallIntegerField(
         verbose_name="Время приготовления в минутах",
         validators=[
@@ -72,7 +74,7 @@ class Recipe(models.Model):
         ordering = ("-pub_date",)
 
     def __str__(self):
-        return f"Пользователь {self.author.email} добавил рецепт {self.name}"
+        return f"{self.author.email}, {self.name}"
 
 
 class RecipeIngredient(models.Model):
@@ -103,11 +105,6 @@ class RecipeIngredient(models.Model):
         ]
 
 
-class RecipeTag(models.Model):
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    tag = models.ForeignKey("Tag", on_delete=models.CASCADE)
-
-
 class Subscribe(models.Model):
     user = models.ForeignKey(
         User,
@@ -134,7 +131,7 @@ class Subscribe(models.Model):
         ]
 
     def __str__(self):
-        return f"Пользователь {self.user} " f"подписался на {self.author}"
+        return f"Пользователь {self.user} -> автор {self.author}"
 
 
 class FavoriteRecipe(models.Model):
@@ -156,7 +153,7 @@ class FavoriteRecipe(models.Model):
         verbose_name_plural = "Избранные рецепты"
 
     def __str__(self):
-        list_ = [_.name for _ in self.recipe.all()]
+        list_ = [item["name"] for item in self.recipe.values("name")]
         return f"Пользователь {self.user} добавил {list_} в избранные."
 
     @receiver(post_save, sender=User)
@@ -183,7 +180,7 @@ class ShoppingCart(models.Model):
         ordering = ["-id"]
 
     def __str__(self):
-        list_ = [_.name for _ in self.recipe.all()]
+        list_ = [item["name"] for item in self.recipe.values("name")]
         return f"Пользователь {self.user} добавил {list_} в покупки."
 
     @receiver(post_save, sender=User)

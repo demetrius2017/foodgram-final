@@ -31,7 +31,7 @@ class TokenSerializer(serializers.Serializer):
             )
             if not user:
                 raise serializers.ValidationError(
-                    ERR_MSG, code="authorization"
+                    ERR_MSG + "(Tokens)", code="authorization"
                 )
         else:
             msg = 'Необходимо указать "адрес электронной почты" и "пароль".'
