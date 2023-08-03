@@ -19,7 +19,7 @@ ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", default="localhost").split(
 
 ALLOWED_HOSTS = ["*"]
 
-AUTH_USER_MODEL = "users.User"
+AUTH_USER_MODEL = 'users.User'
 
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "recipes.apps.RecipesConfig",
     "api.apps.ApiConfig",
+    "users",
     "djoser",
     "rest_framework",
     "rest_framework.authtoken",
