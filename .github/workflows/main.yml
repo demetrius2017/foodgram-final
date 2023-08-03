@@ -45,11 +45,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
-    - name: Build Docker image
-      run: docker build -t my-frontend-image ./frontend
-    - name: Test frontend inside Docker container
-      run: docker run my-frontend-image npm run test
-
+    - name: Set up nodeJS
+      uses: actions/setup-node@v3
+      with:
+        node-version: 13.12.0
+    - name: Install dependencies
+      run: |
+        cd frontend/
+        npm install
+    - name: Test frontend
+      run: |
+        cd frontend/
+        npm run test
 
   build_and_push_to_docker_hub:
     name: Push Docker image to DockerHub
