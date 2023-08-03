@@ -58,6 +58,9 @@ jobs:
       run: |
         cd frontend/
         npm run test
+    - name: Build Docker image
+      run: |
+        docker build -t my-frontend-image ./frontend
 
   build_and_push_to_docker_hub:
     name: Push Docker image to DockerHub
