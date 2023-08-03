@@ -5,6 +5,7 @@ from api.views import (
     IngredientsViewSet,
     RecipesViewSet,
     TagsViewSet,
+    Tokens,
     UsersViewSet,
     set_password,
 )
@@ -21,6 +22,7 @@ router.register("recipes", RecipesViewSet)
 
 
 urlpatterns = [
+    path("auth/token/login/", Tokens.as_view(), name="login"),
     path("users/set_password/", set_password, name="set_password"),
     path(
         "users/<int:user_id>/subscribe/",

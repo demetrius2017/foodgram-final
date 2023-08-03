@@ -3,7 +3,6 @@ import io
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAdminOrReadOnly
 from django.contrib.auth import get_user_model
-from django.contrib.auth.hashers import make_password
 from django.db.models.aggregates import Count, Sum
 from django.db.models.expressions import Exists, OuterRef, Value
 from django.http import FileResponse
@@ -21,8 +20,11 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 from rest_framework import generics, status, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import action, api_view
 from rest_framework.permissions import (
+    SAFE_METHODS,
     AllowAny,
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
@@ -31,10 +33,12 @@ from rest_framework.response import Response
 
 from .serializers import (
     IngredientSerializer,
-    RecipeSerializer,
+    RecipeReadSerializer,
+    RecipeWriteSerializer,
     SubscribeRecipeSerializer,
     SubscribeSerializer,
     TagSerializer,
+    TokenSerializer,
     UserCreateSerializer,
     UserListSerializer,
     UserPasswordSerializer,
@@ -42,6 +46,26 @@ from .serializers import (
 
 User = get_user_model()
 FILENAME = "shoppingcart.pdf"
+
+
+class GetObjectMixin:
+    """Миксина для удаления/добавления рецептов избранных/корзины."""
+
+    serializer_class = SubscribeRecipeSerializer
+    permission_classes = (AllowAny,)
+
+    def get_object(self):
+        recipe_id = self.kwargs["recipe_id"]
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        self.check_object_permissions(self.request, recipe)
+        return recipe
+
+
+class PermissionAndPaginationMixin:
+    """Миксина для списка тегов и ингридиентов."""
+
+    permission_classes = (IsAdminOrReadOnly,)
+    pagination_class = None
 
 
 class AddAndDeleteSubscribe(
@@ -88,17 +112,11 @@ class AddAndDeleteSubscribe(
 
 
 class AddDeleteFavoriteRecipe(
-    generics.RetrieveDestroyAPIView, generics.ListCreateAPIView
+    GetObjectMixin,
+    generics.RetrieveDestroyAPIView,
+    generics.ListCreateAPIView,
 ):
     """Добавление и удаление рецепта в/из избранных."""
-
-    serializer_class = SubscribeRecipeSerializer
-
-    def get_object(self):
-        recipe_id = self.kwargs["recipe_id"]
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        self.check_object_permissions(self.request, recipe)
-        return recipe
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -111,18 +129,11 @@ class AddDeleteFavoriteRecipe(
 
 
 class AddDeleteShoppingCart(
-    generics.RetrieveDestroyAPIView, generics.ListCreateAPIView
+    GetObjectMixin,
+    generics.RetrieveDestroyAPIView,
+    generics.ListCreateAPIView,
 ):
     """Добавление и удаление рецепта в/из корзины."""
-
-    serializer_class = SubscribeRecipeSerializer
-    permission_classes = (AllowAny,)
-
-    def get_object(self):
-        recipe_id = self.kwargs["recipe_id"]
-        recipe = get_object_or_404(Recipe, id=recipe_id)
-        self.check_object_permissions(self.request, recipe)
-        return recipe
 
     def create(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -152,13 +163,9 @@ class UsersViewSet(UserViewSet):
         )
 
     def get_serializer_class(self):
-        if self.request.method.lower() == "post":
+        if self.request.method in SAFE_METHODS:
             return UserCreateSerializer
         return UserListSerializer
-
-    def perform_create(self, serializer):
-        password = make_password(self.request.data["password"])
-        serializer.save(password=password)
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
@@ -173,18 +180,17 @@ class UsersViewSet(UserViewSet):
         return self.get_paginated_response(serializer.data)
 
 
-class RecipesViewSet(generics.ListCreateAPIView, viewsets.GenericViewSet):
+class RecipesViewSet(viewsets.ModelViewSet):
     """Рецепты."""
 
     queryset = Recipe.objects.all()
-    serializer_class = SubscribeRecipeSerializer
     filterset_class = RecipeFilter
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def get_serializer_class(self):
-        if self.request.method == "GET":
-            return RecipeSerializer
-        return SubscribeRecipeSerializer
+        if self.request.method in SAFE_METHODS:
+            return RecipeReadSerializer
+        return RecipeWriteSerializer
 
     def get_queryset(self):
         return (
@@ -222,6 +228,9 @@ class RecipesViewSet(generics.ListCreateAPIView, viewsets.GenericViewSet):
                 "favorite_recipe",
             )
         )
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     @action(
         detail=False, methods=["get"], permission_classes=(IsAuthenticated,)
@@ -266,23 +275,19 @@ class RecipesViewSet(generics.ListCreateAPIView, viewsets.GenericViewSet):
         return FileResponse(buffer, as_attachment=True, filename=FILENAME)
 
 
-class TagsViewSet(viewsets.ModelViewSet):
+class TagsViewSet(PermissionAndPaginationMixin, viewsets.ModelViewSet):
     """Список тэгов."""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = (IsAdminOrReadOnly,)
-    pagination_class = None
 
 
-class IngredientsViewSet(viewsets.ModelViewSet):
+class IngredientsViewSet(PermissionAndPaginationMixin, viewsets.ModelViewSet):
     """Список ингредиентов."""
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     filterset_class = IngredientFilter
-    permission_classes = (IsAdminOrReadOnly,)
-    pagination_class = None
 
 
 @api_view(["post"])
@@ -301,3 +306,19 @@ def set_password(request):
         {"error": "Введите верные данные!"},
         status=status.HTTP_400_BAD_REQUEST,
     )
+
+
+class Tokens(ObtainAuthToken):
+    """Авторизация пользователя."""
+
+    serializer_class = TokenSerializer
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data["user"]
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response(
+            {"auth_token": token.key}, status=status.HTTP_201_CREATED
+        )
