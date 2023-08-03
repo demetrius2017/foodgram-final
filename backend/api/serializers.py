@@ -31,7 +31,7 @@ class TokenSerializer(serializers.Serializer):
             )
             if not user:
                 raise serializers.ValidationError(
-                    ERR_MSG + "(Tokens)", code="authorization"
+                    ERR_MSG, code="authorization"
                 )
         else:
             msg = 'Необходимо указать "адрес электронной почты" и "пароль".'
@@ -48,7 +48,7 @@ class GetIsSubscribedMixin:
         return user.follower.filter(author=obj).exists()
 
 
-class UserListSerializer(serializers.ModelSerializer, GetIsSubscribedMixin):
+class UserListSerializer(GetIsSubscribedMixin, serializers.ModelSerializer):
     is_subscribed = serializers.BooleanField(read_only=True)
 
     class Meta:
@@ -131,7 +131,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "measurement_unit", "amount")
 
 
-class RecipeUserSerializer(serializers.ModelSerializer, GetIsSubscribedMixin):
+class RecipeUserSerializer(GetIsSubscribedMixin, serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
