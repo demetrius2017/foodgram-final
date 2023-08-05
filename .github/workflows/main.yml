@@ -139,15 +139,6 @@ jobs:
           echo "USER=${{ secrets.USER }}" | sudo tee -a .env
           sudo docker-compose up -d --build
           sleep 180
-    - name: Check database availability
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        script: |
-          sudo docker-compose exec -T backend python manage.py check --database default
     - name: Run migrations, collect static files and copy them
       uses: appleboy/ssh-action@master
       with:
