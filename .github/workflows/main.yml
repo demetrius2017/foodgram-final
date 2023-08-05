@@ -136,6 +136,7 @@ jobs:
           echo "SECRET_KEY=\"${{ secrets.SECRET_KEY }}\"" | sudo tee -a .env
           echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" | sudo tee -a .env
           echo "DEBUG=False" | sudo tee -a .env
+          echo "USER=${{ secrets.USER }}" | sudo tee -a .env
           sudo docker-compose up -d --build
           sleep 20
           sudo docker-compose exec -T backend python manage.py migrate
