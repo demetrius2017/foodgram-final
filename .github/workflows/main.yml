@@ -116,7 +116,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         source: "./infra/docker-compose.yml"
-        target: "foodgram-project-react/docker-compose.yml"        
+        target: "foodgram-project-react/"        
     - name: Create .env file and run docker-compose
       uses: appleboy/ssh-action@master
       with:
