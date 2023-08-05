@@ -47,7 +47,7 @@ class Recipe(models.Model):
     name = models.CharField("Название рецепта", max_length=255)
     image = models.ImageField(
         "Изображение рецепта",
-        upload_to=settings.STATIC_URL + "recipe/",
+        upload_to="static/recipe/",
         blank=True,
         null=True,
     )
