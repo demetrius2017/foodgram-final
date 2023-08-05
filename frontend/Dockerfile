@@ -1,29 +1,26 @@
 FROM node:13.12.0-alpine as build
 
-# Создаем группу и пользователя для безопасности
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
-
-# Устанавливаем домашний каталог для нашего приложения
 WORKDIR /app
 
-# Используем созданного пользователя
-USER appuser
+# Изменяем права на каталог
+RUN chown -R node:node /app && chmod -R 775 /app
 
-# Копируем файлы package.json и package-lock.json (если он есть)
+# Переключаемся на пользователя node
+USER node
+
+# Копирование файлов package.json и package-lock.json (если он есть)
 COPY package*.json ./
 
-# Устанавливаем все зависимости, включая react и react-dom
+# Установка всех зависимостей, включая react и react-dom
 RUN npm install
 
-# Копируем остальные файлы
-COPY . .
+# Копирование остальных файлов
+COPY --chown=node:node . .
 
-# Собираем проект
+# Сборка проекта
 RUN npm run build
-
-# Здоровье контейнера проверяется путем проверки доступности HTTP сервера
-# HEALTHCHECK CMD curl --fail http://localhost:8080/ || exit 1
 
 # Команда для копирования результата сборки
 CMD ["cp", "-r", "build", "result_build"]
+
 
