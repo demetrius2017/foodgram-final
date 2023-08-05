@@ -23,7 +23,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.8
+        python-version: 3.9
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -137,10 +137,10 @@ jobs:
           echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" | sudo tee -a .env
           echo "DEBUG=False" | sudo tee -a .env
           sudo docker-compose up -d --build
+          sleep 20
           sudo docker-compose exec -T backend python manage.py migrate
           sudo docker-compose exec -T backend python manage.py collectstatic
           sudo docker-compose exec -T backend cp -r /app/collected_static/. /backend_static/static/
-
 
   send_message:
     runs-on: ubuntu-latest
