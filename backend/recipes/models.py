@@ -3,6 +3,8 @@ from django.core import validators
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.conf import settings
+
 
 User = get_user_model()
 
@@ -46,7 +48,7 @@ class Recipe(models.Model):
     name = models.CharField("Название рецепта", max_length=255)
     image = models.ImageField(
         "Изображение рецепта",
-        upload_to="static/recipe/",
+        upload_to=settings.STATIC_URL + "recipe/",
         blank=True,
         null=True,
     )
