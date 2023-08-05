@@ -115,7 +115,7 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "./infra/docker-compose.yml"
+        source: "docker-compose.yml"
         target: "foodgram-project-react/"
     - name: Check files
       uses: appleboy/ssh-action@master
