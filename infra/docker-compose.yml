@@ -11,7 +11,7 @@ services:
 
   backend:
     image: demetrius2017/foodgram_backend:latest
-    restart: 'no
+    restart: 'no'
     volumes:
       - data_value:/code/data/
       - static_value:/code/static/
