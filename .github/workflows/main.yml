@@ -116,7 +116,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         source: ./infra/docker-compose.yml
-        target: foodgram_final
+        target: foodgram-project-react
     - name: Create .env file and run docker-compose
       uses: appleboy/ssh-action@master
       with:
@@ -125,7 +125,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
-          cd foodgram_finals
+          cd foodgram-project-react
           sudo docker-compose down
           sudo touch .env
           echo "POSTGRES_DB=${{ secrets.DB_NAME }}" | sudo tee -a .env
@@ -138,7 +138,7 @@ jobs:
           echo "DEBUG=False" | sudo tee -a .env
           echo "USER=${{ secrets.USER }}" | sudo tee -a .env
           sudo docker-compose up -d --build
-          sleep 60
+          sleep 180
     - name: Check database availability
       uses: appleboy/ssh-action@master
       with:
@@ -156,6 +156,7 @@ jobs:
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
+          sudo docker-compose exec -T backend python manage.py makemigrations recipes
           sudo docker-compose exec -T backend python manage.py migrate
           sudo docker-compose exec -T backend python manage.py collectstatic
           sudo docker-compose exec -T backend cp -r /app/collected_static/. /backend_static/static/
