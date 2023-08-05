@@ -1,5 +1,6 @@
 import django_filters as filters
 from django.forms.widgets import CheckboxInput
+
 from recipes.models import Ingredient, Recipe
 from users.models import User
 
