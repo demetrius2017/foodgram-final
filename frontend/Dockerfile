@@ -4,4 +4,6 @@ COPY package*.json ./
 RUN npm install
 COPY . ./
 RUN npm run build
-CMD cp -r build result_build
+RUN mkdir -p result_build && \
+    chmod -R 777 result_build
+CMD cp -r build/* result_build/
