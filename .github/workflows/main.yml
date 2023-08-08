@@ -165,7 +165,6 @@ jobs:
           echo "ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}" | sudo tee -a .env
           echo "DEBUG=False" | sudo tee -a .env
           echo "USER=${{ secrets.USER }}" | sudo tee -a .env
-          sleep 180
     - name: Run migrations, collect static files and copy them
       uses: appleboy/ssh-action@master
       with:
@@ -182,7 +181,6 @@ jobs:
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py makemigrations recipes
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
-          sleep 30
           sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
 
   send_message:
