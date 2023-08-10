@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Копируем файлы зависимостей и устанавливаем зависимости
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm install
 
 # Копируем остальные файлы и собираем проект
 COPY . .
