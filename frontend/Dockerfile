@@ -1,9 +1,17 @@
 FROM node:13.12.0-alpine as build
+
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . ./
+
+# Копируем файлы зависимостей и устанавливаем зависимости
+COPY package.json package-lock.json ./
+RUN npm ci
+
+# Копируем остальные файлы и собираем проект
+COPY . .
 RUN npm run build
-RUN mkdir -p result_build && \
-    chmod -R 777 result_build
-CMD cp -r build/* result_build/
+
+# Устанавливаем http-server глобально
+RUN npm install --global http-server
+
+# Запускаем сервер на порту 9000
+CMD ["http-server", "-p", "9000", "/app/build"]
