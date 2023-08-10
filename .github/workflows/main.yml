@@ -128,19 +128,6 @@ jobs:
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
-    - name: Prune Docker
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        key: ${{ secrets.SSH_KEY }}
-        passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        script: |
-          yes | sudo docker system prune -a
-          sudo docker stop $(sudo docker ps -a -q)
-          sudo docker rm $(sudo docker ps -a -q)
-          sudo docker rmi $(sudo docker images -q)
-          sudo docker volume rm $(sudo docker volume ls -q)
     - name: Copy files via ssh
       uses: appleboy/scp-action@master
       with:
