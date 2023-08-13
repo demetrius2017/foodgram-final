@@ -71,12 +71,6 @@ const RecipeCreate = ({ onEdit }) => {
       <Form
         className={styles.form}
         onSubmit={e => {
-          e.preventDefault()
-          const namePattern = /^[0-9\W]+$/
-          if (namePattern.test(recipeName)) {
-            alert('Имя не может состоять только из цифр и символов!')
-            return
-          }
           const data = {
             text: recipeText,
             name: recipeName,
