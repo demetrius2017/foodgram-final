@@ -15,7 +15,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
 
   backend:
-    image: demetrius2017/foodgram-backend
+    image: demetrius2017/foodgram_backend
     container_name: foodgram-backend
     env_file: .env
     depends_on:
@@ -26,8 +26,8 @@ services:
       - redoc:/app/api/docs/
 
   frontend:
-    image: demetrius2017/foodgram-frontend
-    container_name: foodgram-frontend
+    image: demetrius2017/foodgram_frontend
+    container_name: foodgram_frontend
     volumes:
       - ./frontend/:/app/result_build/
 
