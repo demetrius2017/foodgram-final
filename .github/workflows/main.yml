@@ -136,8 +136,17 @@ jobs:
         username: ${{ secrets.USER }}
         key: ${{ secrets.SSH_KEY }}
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
-        source: "./infra/docker-compose.production.yml"
-        target: "foodgram-project-react/docker-compose.production.yml"
+        source: "infra/docker-compose.production.yml"
+        target: "foodgram-project-react/"
+    - name: Move docker-compose.production.yml file to the right location
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        script: |
+          mv foodgram-project-react/infra/docker-compose.production.yml foodgram-project-react/docker-compose.production.yml
     - name: Check files
       uses: appleboy/ssh-action@master
       with:
