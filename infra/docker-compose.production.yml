@@ -13,6 +13,15 @@ services:
     env_file: .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${DB_NAME}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     image: demetrius2017/foodgram_backend
@@ -21,15 +30,18 @@ services:
     depends_on:
       - db
     volumes:
-      - static_data:/backend_static/static/
-      - media_data:/app/media
-      - redoc:/app/api/docs/
+      - static_data:/app/backend_static/
+      - media_data:/app/foodgram/media/
+      - redoc:/app/docs/
 
   frontend:
     image: demetrius2017/foodgram_frontend
     container_name: foodgram_frontend
     volumes:
-      - ./frontend/:/app/result_build/
+       - frontend_data:/static/
+    command: cp -r /app/build/. /static/
+    depends_on:
+      - backend
 
   nginx:
     image: demetrius2017/foodgram_gateway
@@ -37,9 +49,9 @@ services:
     ports:
       - 9000:80
     volumes:
-      - ./frontend/build:/usr/share/nginx/html/
-      - static_data:/var/html/static/
-      - media_data:/var/html/media/
+      - static_data:/usr/share/nginx/html/static_backend/
+      - frontend_data:/usr/share/nginx/html/
+      - media_data:/usr/share/nginx/html/media/
       - redoc:/usr/share/nginx/html/api/docs/
     depends_on:
-      - backend
+      - frontend
